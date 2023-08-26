@@ -7,9 +7,8 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({Key? key}) : super(key: key);
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
@@ -17,10 +16,8 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Namer App',
         theme: ThemeData(
-          useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepOrange),
-          // This is the theme of your application.
-          //
+          colorScheme: ColorScheme.fromSeed(
+              seedColor: Color.fromARGB(255, 123, 219, 252)),
         ),
         home: MyHomePage(),
       ),
@@ -29,27 +26,71 @@ class MyApp extends StatelessWidget {
 }
 
 class MyAppState extends ChangeNotifier {
-  var current = WordPair.random();
+  late WordPair current; // Initialize with late
+
+  MyAppState() {
+    current = WordPair.random();
+  }
+
+  void getNext() {
+    current = WordPair.random();
+    notifyListeners();
+  }
 }
 
 class MyHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
+    var pair = appState.current;
 
     return Scaffold(
-      body: Column(
-        children: [
-          Text('A random AWESOME idea:'),
-          Text(appState.current.asLowerCase),
-          ElevatedButton(
-            onPressed: () {
-              print('button pressed!');
-            },
-            child: Text('Next'),
-          ),
-        ],
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('A random AWESOME idea:'),
+            BigCard(pair: pair),
+            SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () {
+                appState.getNext();
+              },
+              child: Text('Next'),
+            ),
+          ],
+        ),
       ),
     );
+  }
+}
+
+class BigCard extends StatelessWidget {
+  const BigCard({
+    Key? key,
+    required this.pair,
+  }) : super(key: key);
+
+  final WordPair pair;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    final style = theme.textTheme.displayMedium!.copyWith(
+      color: theme.colorScheme.onPrimary,
+    );
+
+    return Card(
+      color: theme.colorScheme.primary,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Text(
+          pair.asLowerCase,
+          style: style,
+          semanticsLabel: "${pair.first} ${pair.second}",
+        ),
+      ),
+    ); // Use asPascalCase
   }
 }
